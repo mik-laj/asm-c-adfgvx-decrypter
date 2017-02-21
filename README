@@ -1,0 +1,336 @@
+
+     ____  _______   __ _____  ____         _     ____   _____  ____ __  __     
+    / ___||__  /\ \ / /|  ___||  _ \       / \   |  _ \ |  ___|/ ___|\ \/ /     
+    \___ \  / /  \ V / | |_   | |_) |     / _ \  | | | || |_  | |  _  \  /      
+     ___) |/ /_   | |  |  _|  |  _ <     / ___ \ | |_| ||  _| | |_| | /  \      
+    |____//____|  |_|  |_|    |_| \_\   /_/   \_\|____/ |_|    \____|/_/\_\     
+           ___  ____ _  _ _   _ _  _ _ __ _  _ ___ ____ ____  _ ____            
+           |  \ |  | |_/  |   | |\/| |___ |\ |  |  |__| |     | |__|            
+           |__/ |__| | \_ |__ | |  | |___ | \|  |  |  | |___ _| |  |            
+                  ___ ____ ____ _  _ _  _ _ ____ ___  _  _ ____
+                   |  |___ |    |__| |\ | | |      /  |\ | |__|
+                   |  |___ |___ |  | | \| | |___  /__ | \| |  |
+
+
+                                                Kamil Breguła
+                                                Informatyka 
+                                                II rok, I stopień
+                                                Uniwersytety Humanistyczno-
+                                                Przyrodniczy w Siedlcach
+
+
+
+                                 Spis Treści
+
+
+  1. Cel projektu ...................................................... 39
+  2. Założenia ......................................................... 62
+  3. Narzędzia ......................................................... 97
+  4. Omówienie algorytmu ............................................... 106
+  5. Wykorzystane biblioteki Windows API ............................... 188
+  6. Instrukcja obsługi ................................................ 231
+  7. Testowanie ........................................................ 242
+  9. Możliwość rozbudowy ............................................... 278
+  8. Licencja .......................................................... 316
+  8. Bibliografia ...................................................... 327
+
+
+
+CEL PROJEKTU
+============
+
+Celem projektu jest realizacja zadania zgodnie z założeniami pliku projekty.pdf:
+   ┌─────────────────────────────────────────────────────────────┐
+   │ Program łamiący szyfr ADFGVX. Użytkownik podaje plik        │
+   │ wejściowy (zaszyfrowany) oraz słowo lub frazę znajduącą się │
+   │ w zaszyfrowanym pliku. Klucz zapisywany jest do kolejnego   │
+   │ pliku wyjściowego.                                          │
+   └─────────────────────────────────────────────────────────────┘
+Program ma być napisany w języku Assembler, środowisko 
+Microsoft Macro Assembler na platformę x86. 
+
+Szyfr ADFGVX – prosty szyfr, który wykorzystuje szachownice Polibusza oraz 
+pojedyncze transposyzcje. Jest to zatem szyfr podstawiony. Był przez wojska 
+niemieckie w czasie I wojny światowej w czasie walk do wysyłania wiadomości 
+w sposób zabezpieczony. Szyfr ten był rozwinięciem szyfru ADFGX. W porównania 
+do pierwowzoru dostała dodana dodatkowa litera V, co umożliwiło zapisanie 
+36 znaków - całego alfabetu oraz cyfr 0-9. Jego poprzedni umożliwiał wysłanie 
+tylko 25 znaków - litery I i J były zapisywane identycznie.  Szyfrogram zawiera 
+tylko litery A, D, F, G, V oraz X. 
+
+
+ZAŁOZENIA
+=========
+
+Do złamania szyfru potrzebne jest 
+• szachownice Polybiusza
+                                    Przykład: 
+                                   A D F G V X
+                                  ┌─┬─┬─┬─┬─┬─┐
+                                 A│A│B│C│D│E│F│
+                                  ├─┼─┼─┼─┼─┼─┤
+                                 D│G│H│I│J│K│L│
+                                  ├─┼─┼─┼─┼─┼─┤
+                                 F│M│N│O│P│Q│R│
+                                  ├─┼─┼─┼─┼─┼─┤
+                                 G│S│T│U│V│W│X│
+                                  ├─┼─┼─┼─┼─┼─┤
+                                 V│Y│Z│0│1│2│3│
+                                  ├─┼─┼─┼─┼─┼─┤
+                                 X│4│5│6│7│8│9│
+                                  └─┴─┴─┴─┴─┴─┘
+
+• szyfrogram
+                    Przykład: 
+                    GFFADGDXGAAVDDFDFAFVXXFXDXFAGXDAFFGG
+
+• cześć przekazu z szyfrogramu
+                    Przykład: 
+                    HITLER
+
+Ze względu na statyczne alokowanie pamieci program ma ograniczenie co do 
+długości danych. Nie zalecane jest wprowadzanie szyfrogramów dłuższych niż 
+200 znaków.
+Długość szyfrogramu musi być liczbą podzielną przez 6. 
+
+
+NARZĘDZIA
+=========
+
+Do sporządzania dokumentacji wykorzystany został edytor nano 
+oraz edytor Sublime Text. Wbudowane w edytor Sublime Text możliwości edycji 
+tekstu w sposób kolumnowy znacznie usprawniły prace. Wykorzystane środowisko 
+programistyczne to Microsoft Visual Studio 2015
+
+
+OMÓWIENIE ALGORYTMU
+===================
+
+Przyjmujemy, że 
+ ⯈ text.length oznacza dlugość szyfrogramu
+  
+
+① Podziel tekst co text.length / 6 znaków.
+
+GFFADG DXGAAV DDFDFA FVXXFX DXFAGX DAFFGG
+
+② Napisz tekst w 6 kolumnach pisząc kolumnami tj. pierwszy znak 
+w pierwszej kolumnie i pierwszym wierszu, a drugi znak w drugim wierszu i 
+drugiej kolumnie (nie wierszu!)
+                                  ┌─┬─┬─┬─┬─┬─┐
+                                 ↓│G│D│D│F│D│D│
+                                  │F│X│D│V│X│A│
+                                  │F│G│F│X│F│F│
+                                  │A│A│D│X│A│F│
+                                 ↓│D│A│F│F│G│G│
+                                  │G│V│A│X│X│G│
+                                  └─┴─┴─┴─┴─┴─┘
+
+
+③ Dokonaj przekształcenia. 
+
+Aby sprawdzić, czy dobrze przekształcenie jest prawidłowe będziesz musiał 
+przechodzić do kroku kolejnego, a potem wracać do tego etapu i 
+próbować inną kombinacje.
+
+W przykładzie użyte zostało hasło GERMAN
+                 A E G M N R                       G E R M A N
+                ┌─┬─┬─┬─┬─┬─┐                     ┌─┬─┬─┬─┬─┬─┐
+                │G│D│D│F│D│D│              .      │D│D│D│F│G│D│
+                │F│X│D│V│X│A│  ............;;.    │D│X│A│V│F│X│
+                │F│G│F│X│F│F│  ::::::::::::;;;;.  │F│G│F│X│F│F│
+                │A│A│D│X│A│F│  ::::::::::::;;:'   │D│A│F│X│A│A│
+                │D│A│F│F│G│G│              :'     │F│A│G│F│D│G│
+                │G│V│A│X│X│G│                     │A│V│G│X│G│X│
+                └─┴─┴─┴─┴─┴─┘                     └─┴─┴─┴─┴─┴─┘
+
+④ Wykorzystaj szachownice Polybiusza do przekształcenia znaków
+
+ a) odczytanie znaków
+
+    Czytaj co 2 znaki.
+    ⯈ Pierwszy znak jest indeksem kolumny. 
+    ⯈ Drugi znak jest indeksem wiersza.
+                                 ┌───┬───┬───┐
+                                 │D D│D F│G D│
+                                 ├───┼───┼───┤
+                                 │D X│A V│F X│
+                                 ├───┼───┼───┤
+                                 │F G│F X│F F│
+                                 ├───┼───┼───┤
+                                 │D A│F X│A A│
+                                 ├───┼───┼───┤
+                                 │F A│G F│D G│
+                                 ├───┼───┼───┤
+                                 │A V│G X│G X│
+                                 └───┴───┴───┘
+
+ b) dekodowanie
+                 Przyklad 1:       Przyklad 2:       Przyklad 3:
+                   DD ⇒ H           DF ⇒ H            FG ⇒ P
+                 A D F G V X       A D F G V X       A D F G V X
+                ┌─╥─╥─┬─┬─┬─┐     ┌─┬─╥─╥─┬─┬─┐     ┌─┬─┬─╥─╥─┬─┐
+               A│A║B║C│D│E│F│    A│A│B║C║D│E│F│    A│A│B│C║D║E│F│
+                ╞═╬═╬═╪═╪═╪═╡     ╞═╪═╬═╬═╪═╪═╡     ├─┼─┼─╫─╫─┼─┤
+               D│G║H║I│J│K│L│    D│G│H║I║J│K│L│    D│G│H│I║J║K│L│
+                ╞═╬═╬═╪═╪═╪═╡     ╞═╪═╬═╬═╪═╪═╡     ╞═╪═╪═╬═╬═╪═╡
+               F│M║N║O│P│Q│R│    F│M│N║O║P│Q│R│    F│M│N│O║P║Q│R│
+                ├─╫─╫─┼─┼─┼─┤     ├─┼─╫─╫─┼─┼─┤     ╞═╪═╪═╬═╬═╪═╡
+               G│S║T║U│V│W│X│    G│S│T║U║V│W│X│    G│S│T│U║V║W│X│
+                ├─╫─╫─┼─┼─┼─┤     ├─┼─╫─╫─┼─┼─┤     ├─┼─┼─╫─╫─┼─┤
+               V│Y║Z║0│1│2│3│    V│Y│Z║0║1│2│3│    V│Y│Z│0║1║2│3│
+                ├─╫─╫─┼─┼─┼─┤     ├─┼─╫─╫─┼─┼─┤     ├─┼─┼─╫─╫─┼─┤
+               X│4║5║6│7│8│9│    X│4│5║6║7│8│9│    X│4│5│6║7║8│9│
+                └─╨─╨─┴─┴─┴─┘     └─┴─╨─╨─┴─┴─┘     └─┴─┴─╨─╨─┴─┘
+
+Odczytane litery stanowią już odszyfrowaną wiadomość. 
+
+
+WYKORZYSTANE BIBLIOTEKI WINDOWS API
+===================================
+
+CloseHandle
+-----------
+Funkcja służa do obsługi plików. Zamyka plik korzystajac z uchwytu.
+
+CreateFileA 
+-----------
+Funkcja służa do obsługi plików. Otwiera plik i zwraca do niego uchwyt.
+
+ExitProcess
+-----------
+Zamyka okno programu
+
+GetStdHandle
+------------
+Funkcja do obsługi okna. Zwraca uchwyt zapisu lub odczytu do aktualnego okna.
+
+lstrlenA
+--------
+Odczytuje długość ciągu znaków zapisanego w formie tablicy zakończonej 
+terminatorem - bajtem zerowym.
+
+ReadFile
+--------
+Funkcja służa do obsługi plików. Odczytuje dane znajdujące się w pliku. 
+
+WriteConsoleA
+-------------
+Wypisuje dane na konsole
+
+WriteFile
+---------
+Funkcja służa do obsługi plików. Zapisuje dane do pliku. 
+
+wsprintfA
+---------
+Funkcja służa do formatowania tekstu. Formatuje dane zgodnie z przekazanym 
+specyfyikatorem formatu. Umożliwia to proste wyświetlanie cyfr.  
+
+
+INSTRUKCJA OBSŁUGI
+==================
+
+Z programem należy się komunikować za pomocą wpisywania odpowiednich danych 
+w plikach:
+  ⯈ keysquare.txt - wykorzystywana szachownicy Polibiusza 
+  ⯈ cipher.txt - zaszyfrowany tekst 
+  ⯈ check_keyword.txt - fragment wiadomości jawnej 
+
+Wynik będzie zapisywany w pliku "result.txt". 
+
+TESTOWANIE
+==========
+
+I przypadek
+-----------
+Szachownica:
+    ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+
+Szyfrogram: 
+    DFGFVAADAGAVDDAGFVAVXXDDFDDDVVFDGGGAFFFVGFGVGAADDVADDFFFAFADAGAXFXDGAGFD
+    AAFAFXFXFAVGVFDFFDVFGAAG
+
+Fragment wiadomości jawnej: 
+    UNIWERSYTET
+
+Wynik: 
+    UNIWERSYTETPRZYRODNICZOHUMANISTYCZNYWSIEDLCACHXX
+
+    
+II przypadek
+------------
+
+Szachownica:
+    ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+
+Szyfrogram:
+    GFVDFGGVGDXXAVFVVVGFAVFFXXXXXXVGGFFFVFVGFDAFGXDVDVAVGDVXDFFXDDGG
+
+Fragment wiadomości jawnej: 
+    TECZKA
+
+Wynik: 
+    BARDZOLUBIEMUFFINKIICIASTECZKAXX
+
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ C:\kamil>type check_keyword.txt                                             │
+│ UNIWERSYTET                                                                 │
+│ C:\kamil>type cipher.txt                                                    │
+│ DFGFVAADAGAVDDAGFVAVXXDDFDDDVVFDGGGAFFFVGFGVGAADDVADDFFFAFADAGAXFXDGAGFDAAF │
+│ AFXFXFAVGVFDFFDVFGAAG                                                       │
+│ C:\kamil>type keysquare.txt                                                 │
+│ ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789                                        │
+│ C:\kamil>ConsoleApplication3\Debug\ConsoleApplication1.exe                  │
+│ Keysquare: ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 (36)                        │
+│ Cipher: DFGFVAADAGAVDDAGFVAVXXDDFDDDVVFDGGGAFFFVGFGVGAADDVADDFFFAFADAGAXFXD │
+│ GAGFDAAFAFXFXFAVGVFDFFDVFGAAG (96)                                          │
+│ check_keyword: UNIWERSYTET (11)                                             │
+│ plaintext: UNIWERSYTETPRZYRODNICZOHUMANISTYCZNYWSIEDLCACHXX                 │
+│ Found permutation [C, B, F, D, A, E] = UNIWERSYTETPRZYRODNICZOHUMANISTYCZNY │
+│ WSIEDLCACHXX                                                                │
+│                                                                             │
+│ C:\kamil>                                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+MOŻLIWOŚĆ ROZBUDOWY
+===================
+
+W przypadku, gdy wiadomy by był język tekstu jawnego oraz posiadało się duży 
+zbiór danych zapisanych jednym kluczem i jedna szachownicą. Można by dokonać 
+analizy statystycznej czestotliwości występowania liter i porównując ją z 
+charakterystyką języka. Mogło by to uniemożliwić złamanie szyfru bez szachownicy
+Polibiusza. W ramach projektu nie były dokonywane analizy i ani żadne kroki, aby 
+wprowadzić ten sposób łamania szyfru.
+
+Wskazane są również działania optymalizacyjne. Architektura procesora należących
+do kategorii CISC, co oznacza, że posiada bardzo szeroki zakres instrukcji, do 
+bardzo specyficznych zastosowań. Wskazane jest ich wykorzystanie zamiast 
+korzystanie z bardziej generycznych instrukcji. Zwiększyło by wydajność 
+oprogramowania. 
+
+
+
+LICENCJA
+========
+
+Dokumentacja techniczna projektu "Szyfr ADFGVX" jest dostępny na licencji 
+Creative Commons Uznanie autorstwa 4.0 Międzynarodowe.
+Aby zapoznać się z tekstem licencji wejdź na stronę 
+http://creativecommons.org/licenses/by/4.0/
+Kod projektu jest udostępniany na licencji MIT.
+Treśc licencji jest dostępna w pliku LICENCE
+
+
+BIBLIOGRAFIA
+============
+
+1. http://apps.ii.uph.edu.pl/
+2. http://practicalcryptography.com/ciphers/adfgvx-cipher/
+3. https://pl.wikipedia.org/wiki/ADFGVX
+4. "Microsoft® MASM Assembly-Language Development System Version 6.1 
+   For MS-DOS® and Windows™ Operating System - Programmer's Guide" 
+   Microsoft Corporation
+
